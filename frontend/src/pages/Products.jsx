@@ -2,8 +2,11 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ProductCard from '../components/ProductCard';
-import { FiFilter, FiX, FiChevronDown } from 'react-icons/fi';
+import { FiFilter, FiX } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
+
+// Get API URL from environment
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -40,7 +43,7 @@ const Products = () => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const { data } = await axios.get('http://localhost:5000/api/products');
+        const { data } = await axios.get(`${API_URL}/products`);
         setProducts(data);
         
         // Extract unique brands
@@ -48,6 +51,7 @@ const Products = () => {
         setBrands(uniqueBrands);
       } catch (error) {
         console.error('Error fetching products:', error);
+        toast.error('Failed to load products');
       } finally {
         setLoading(false);
       }
@@ -262,7 +266,7 @@ const Products = () => {
                   <div className="flex flex-wrap gap-2">
                     {filters.category && (
                       <span className="inline-flex items-center space-x-1 bg-chers-pale text-chers-pink px-2 py-1 rounded-md text-sm">
-                        <span>{filters.category}</span>
+                        <span className="capitalize">{filters.category}</span>
                         <button
                           onClick={() => setFilters({ ...filters, category: '' })}
                           className="hover:text-chers-pink"
@@ -328,7 +332,7 @@ const Products = () => {
                       </button>
                     </div>
 
-                    {/* Mobile filter content (same as desktop) */}
+                    {/* Mobile filter content */}
                     <div className="mb-6">
                       <h3 className="font-medium mb-3">Category</h3>
                       <div className="space-y-2">

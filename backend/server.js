@@ -4,28 +4,58 @@ const cors = require('cors');
 const path = require('path');
 const connectDB = require('./config/db');
 const productRoutes = require('./routes/productRoutes');
-const { serveImage } = require('./middleware/imageMiddleware');
+const uploadRoutes = require('./routes/uploadRoutes');
 
 dotenv.config();
+
+// Connect to MongoDB
 connectDB();
 
 const app = express();
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true
 }));
 app.use(express.json());
 
-// Serve static files - try this first
-app.use('/images', express.static(path.join(__dirname, 'public/images')));
+// For Vercel, you CANNOT serve static files directly
+// Instead, use a cloud storage solution (recommended)
 
-// If image not found, serve placeholder
-app.get('/images/:filename', serveImage);
+// Option 1: Use a cloud storage URL (RECOMMENDED)
+// Store full URLs in your database instead of relative paths
+// Example: "https://res.cloudinary.com/your-cloud/image/upload/v123/dior-sauvage.jpg"
+
+// Option 2: If you MUST serve local images for development only
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/images', express.static(path.join(__dirname, 'public/images')));
+  
+  // Image fallback for development
+  app.get('/images/:filename', (req, res, next) => {
+    const imagePath = path.join(__dirname, 'public/images', req.params.filename);
+    res.sendFile(imagePath, err => {
+      if (err) {
+        // Serve placeholder if image not found
+        res.sendFile(path.join(__dirname, 'public/images/placeholder.jpg'));
+      }
+    });
+  });
+}
 
 // Routes
 app.use('/api/products', productRoutes);
+app.use('/api/upload', uploadRoutes); 
+
+// Health check
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Server is running',
+    environment: process.env.NODE_ENV || 'development',
+    timestamp: new Date().toISOString()
+  });
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -37,9 +67,9 @@ app.use((err, req, res, next) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
+// ❌ REMOVE this for Vercel:
+// const PORT = process.env.PORT || 5000;
+// app.listen(PORT, () => {...})
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Image URL example: http://localhost:${PORT}/images/bluedechanel.jpg`);
-});
+// ✅ EXPORT for Vercel:
+module.exports = app;

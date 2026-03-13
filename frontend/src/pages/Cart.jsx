@@ -2,8 +2,29 @@ import { Link } from 'react-router-dom';
 import { FiTrash2, FiArrowLeft, FiShoppingBag } from 'react-icons/fi';
 import { useCart } from '../contexts/CartContext';
 
+// Get Cloudinary cloud name from environment
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+
 const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity, getCartTotal } = useCart();
+
+  // Generate optimized Cloudinary URL
+  const getOptimizedImageUrl = (url, width = 100, height = 100) => {
+    if (!url) return '';
+    
+    if (url.includes('cloudinary')) {
+      const parts = url.split('/upload/');
+      if (parts.length === 2) {
+        return `${parts[0]}/upload/w_${width},h_${height},c_fill,q_auto,f_auto/${parts[1]}`;
+      }
+    }
+    return url;
+  };
+
+  // Fallback image
+  const getFallbackImage = () => {
+    return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_100,h_100,c_fill/v1/perfume-store/placeholder`;
+  };
 
   if (cartItems.length === 0) {
     return (
@@ -35,14 +56,15 @@ const Cart = () => {
           <div className="lg:col-span-2">
             <div className="bg-chers-white rounded-lg shadow-sm overflow-hidden">
               {cartItems.map((item) => (
-                <div key={item._id} className="flex items-center p-4 border-b last:border-0">
+                <div key={item._id} className="flex items-center p-4 border-b last:border-0 hover:bg-chers-soft/30 transition">
                   {/* Product Image */}
                   <Link to={`/product/${item._id}`} className="w-24 h-24 bg-chers-pale rounded-md overflow-hidden flex-shrink-0">
                     <img 
-                      src={`http://localhost:5000${item.imageUrl}`}
+                      src={getOptimizedImageUrl(item.imageUrl, 100, 100)}
                       alt={item.name}
                       className="w-full h-full object-cover"
-                      onError={(e) => e.target.src = 'https://via.placeholder.com/100x100?text=Perfume'}
+                      onError={(e) => e.target.src = getFallbackImage()}
+                      loading="lazy"
                     />
                   </Link>
 
@@ -59,14 +81,16 @@ const Cart = () => {
                   <div className="flex items-center space-x-2 mx-4">
                     <button 
                       onClick={() => updateQuantity(item._id, item.quantity - 1)}
-                      className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded-md hover:bg-chers-pale"
+                      className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded-md hover:bg-chers-pale transition"
+                      aria-label="Decrease quantity"
                     >
                       -
                     </button>
-                    <span className="w-8 text-center">{item.quantity}</span>
+                    <span className="w-8 text-center font-medium">{item.quantity}</span>
                     <button 
                       onClick={() => updateQuantity(item._id, item.quantity + 1)}
-                      className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded-md hover:bg-chers-pale"
+                      className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded-md hover:bg-chers-pale transition"
+                      aria-label="Increase quantity"
                     >
                       +
                     </button>
@@ -74,10 +98,11 @@ const Cart = () => {
 
                   {/* Price */}
                   <div className="text-right min-w-[100px]">
-                    <p className="font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
+                    <p className="font-semibold text-chers-pink">${(item.price * item.quantity).toFixed(2)}</p>
                     <button 
                       onClick={() => removeFromCart(item._id)}
-                      className="text-red-500 hover:text-red-700 text-sm mt-1 flex items-center"
+                      className="text-red-500 hover:text-red-700 text-sm mt-1 flex items-center justify-end transition"
+                      aria-label="Remove item"
                     >
                       <FiTrash2 className="mr-1" /> Remove
                     </button>
@@ -100,14 +125,14 @@ const Cart = () => {
               <div className="space-y-3 mb-4">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
-                  <span>${getCartTotal().toFixed(2)}</span>
+                  <span className="font-medium">${getCartTotal().toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Shipping</span>
-                  <span>Free</span>
+                  <span className="text-green-600">Free</span>
                 </div>
-                <div className="border-t pt-3 font-semibold">
-                  <div className="flex justify-between">
+                <div className="border-t pt-3">
+                  <div className="flex justify-between font-semibold text-lg">
                     <span>Total</span>
                     <span className="text-chers-pink">${getCartTotal().toFixed(2)}</span>
                   </div>
@@ -115,10 +140,14 @@ const Cart = () => {
               </div>
 
               <Link to="/checkout">
-                <button className="w-full bg-chers-pink text-white py-3 rounded-md hover:bg-opacity-90 transition">
+                <button className="w-full bg-chers-pink text-white py-3 rounded-md hover:bg-opacity-90 transition shadow-md hover:shadow-lg">
                   Proceed to Checkout
                 </button>
               </Link>
+
+              <p className="text-xs text-gray-400 text-center mt-4">
+                Secure checkout powered by Cloudinary
+              </p>
             </div>
           </div>
         </div>

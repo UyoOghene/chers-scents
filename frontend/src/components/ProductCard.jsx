@@ -22,71 +22,38 @@ const ProductCard = ({ product }) => {
     toast.success(isWishlisted ? 'Removed from wishlist' : 'Added to wishlist');
   };
 
-  // Generate a color based on product category for placeholder
-  const getCategoryColor = () => {
-    switch(product.category) {
-      case 'men': return '#3b82f6';
-      case 'women': return '#ec4899';
-      case 'unisex': return '#8b5cf6';
-      case 'kids': return '#f59e0b';
-      default: return '#e37380';
+  // Generate Cloudinary URL with optimizations
+  const getOptimizedImageUrl = () => {
+    if (!product.imageUrl) return '';
+    
+    // If it's already a Cloudinary URL, add transformations
+    if (product.imageUrl.includes('cloudinary')) {
+      // Split the URL to insert transformations
+      const parts = product.imageUrl.split('/upload/');
+      if (parts.length === 2) {
+        // Add transformations: width 400, height 400, crop fill, auto quality, auto format
+        return `${parts[0]}/upload/w_400,h_400,c_fill,q_auto,f_auto/${parts[1]}`;
+      }
     }
+    return product.imageUrl;
   };
 
-  // Create a data URL for a colored placeholder with text
-  const createPlaceholderDataUrl = () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 400;
-    canvas.height = 400;
-    const ctx = canvas.getContext('2d');
+  // Fallback image based on category
+  const getFallbackImage = () => {
+    const colors = {
+      men: '3b82f6',
+      women: 'ec4899',
+      unisex: '8b5cf6',
+      kids: 'f59e0b'
+    };
+    const color = colors[product.category] || 'e37380';
     
-    // Fill with category color
-    ctx.fillStyle = getCategoryColor();
-    ctx.fillRect(0, 0, 400, 400);
-    
-    // Add pattern
-    ctx.fillStyle = 'rgba(255,255,255,0.1)';
-    for(let i = 0; i < 400; i += 40) {
-      ctx.fillRect(i, 0, 20, 400);
-    }
-    
-    // Add text
-    ctx.fillStyle = 'white';
-    ctx.font = 'bold 24px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText(product.name.substring(0, 20), 200, 200);
-    
-    ctx.font = '18px Arial';
-    ctx.fillText(product.brand, 200, 240);
-    
-    ctx.font = '16px Arial';
-    ctx.fillStyle = 'rgba(255,255,255,0.8)';
-    ctx.fillText(product.category, 200, 280);
-    
-    return canvas.toDataURL();
+    // Use Cloudinary to generate a colored placeholder
+    return `https://res.cloudinary.com/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload/w_400,h_400,c_fill,b_rgb:${color}/v1/perfume-store/placeholder`;
   };
-
-  const [placeholderDataUrl, setPlaceholderDataUrl] = useState('');
-
-  // Generate placeholder on component mount
-  useState(() => {
-    setPlaceholderDataUrl(createPlaceholderDataUrl());
-  }, []);
-
-  // Try multiple image sources
-  const imageSources = [
-    `http://localhost:5000${product.imageUrl}`,
-    `http://localhost:5000/images/${product.sku}.jpg`,
-    `http://localhost:5000/images/${product.name.toLowerCase().replace(/\s+/g, '_')}_${product.category}.jpg`,
-    placeholderDataUrl || createPlaceholderDataUrl()
-  ];
-
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const handleImageError = () => {
-    if (currentImageIndex < imageSources.length - 1) {
-      setCurrentImageIndex(prev => prev + 1);
-    }
+    setImageError(true);
   };
 
   return (
@@ -95,10 +62,11 @@ const ProductCard = ({ product }) => {
         {/* Image Container */}
         <div className="relative h-80 overflow-hidden bg-chers-pale">
           <img 
-            src={imageSources[currentImageIndex]}
+            src={imageError ? getFallbackImage() : getOptimizedImageUrl()}
             alt={product.name}
             onError={handleImageError}
             className="w-full h-full object-cover group-hover:scale-110 transition duration-500"
+            loading="lazy"
           />
           
           {/* Overlay with quick actions */}
@@ -106,6 +74,7 @@ const ProductCard = ({ product }) => {
             <button
               onClick={handleWishlist}
               className="bg-white p-3 rounded-full mx-2 hover:bg-chers-pink hover:text-white transition-colors"
+              aria-label="Add to wishlist"
             >
               <FiHeart className={`text-xl ${isWishlisted ? 'fill-chers-pink text-chers-pink' : ''}`} />
             </button>
@@ -120,6 +89,12 @@ const ProductCard = ({ product }) => {
           {product.stock < 5 && product.stock > 0 && (
             <span className="absolute top-4 right-4 bg-chers-pink text-white px-3 py-1 rounded-full text-xs font-medium">
               Only {product.stock} left
+            </span>
+          )}
+          
+          {product.stock === 0 && (
+            <span className="absolute top-4 right-4 bg-gray-500 text-white px-3 py-1 rounded-full text-xs font-medium">
+              Out of Stock
             </span>
           )}
         </div>

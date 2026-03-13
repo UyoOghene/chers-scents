@@ -6,6 +6,10 @@ const connectDB = require('./config/db');
 dotenv.config();
 connectDB();
 
+// Cloudinary base URL - replace with your actual cloud name
+const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || 'dk0e6pgpj';
+const CLOUDINARY_BASE = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1/perfume-store`;
+
 const perfumes = [
   {
     name: "Bleu de Chanel",
@@ -17,7 +21,7 @@ const perfumes = [
     sku: "CS-MEN-001",
     description: "A timeless fragrance for the modern man. Fresh, woody, and aromatic.",
     notes: ["Grapefruit", "Ginger", "Incense"],
-    imageUrl: "/images/bluedechanel2.jpg",
+    imageUrl: `${CLOUDINARY_BASE}/bluedechanel2.jpg`,
     isFeatured: true
   },
   {
@@ -30,7 +34,7 @@ const perfumes = [
     sku: "CS-WOM-001",
     description: "A sweet and joyful fragrance that captures the essence of happiness.",
     notes: ["Iris", "Patchouli", "Vanilla"],
-    imageUrl: "/images/lancomelavie.jpg",
+    imageUrl: `${CLOUDINARY_BASE}/lancomelavie.jpg`,
     isFeatured: true
   },
   {
@@ -43,7 +47,7 @@ const perfumes = [
     sku: "CS-MEN-002",
     description: "A bold and fresh fragrance inspired by wide-open spaces.",
     notes: ["Bergamot", "Pepper", "Amber"],
-    imageUrl: "/images/dior sauvage.jpg",
+    imageUrl: `${CLOUDINARY_BASE}/dior-sauvage.jpg`,
     isFeatured: true
   },
   {
@@ -56,7 +60,7 @@ const perfumes = [
     sku: "CS-WOM-002",
     description: "An explosion of flowers with a feminine and addictive character.",
     notes: ["Rose", "Jasmine", "Patchouli"],
-    imageUrl: "/images/flowebomb.jpg",
+    imageUrl: `${CLOUDINARY_BASE}/flowebomb.jpg`,
     isFeatured: false
   },
   {
@@ -69,7 +73,7 @@ const perfumes = [
     sku: "CS-MEN-003",
     description: "A fresh and aquatic scent that evokes the Mediterranean.",
     notes: ["Sea Notes", "Bergamot", "Rosemary"],
-    imageUrl: "/images/acquadigio.jpg",
+    imageUrl: `${CLOUDINARY_BASE}/acquadigio.jpg`,
     isFeatured: true
   },
   {
@@ -82,7 +86,7 @@ const perfumes = [
     sku: "CS-WOM-003",
     description: "A fresh oriental fragrance with a strong and sensual character.",
     notes: ["Orange", "Rose", "Patchouli"],
-    imageUrl: "/images/cocomademoiselle.jpg",
+    imageUrl: `${CLOUDINARY_BASE}/cocomademoiselle.jpg`,
     isFeatured: true
   },
   {
@@ -95,7 +99,7 @@ const perfumes = [
     sku: "CS-WOM-004",
     description: "A seductive gourmand fragrance with a modern rock edge.",
     notes: ["Coffee", "Vanilla", "White Flowers"],
-    imageUrl: "/images/blackopium.jpg",
+    imageUrl: `${CLOUDINARY_BASE}/blackopium.jpg`,
     isFeatured: false
   },
   {
@@ -108,7 +112,7 @@ const perfumes = [
     sku: "CS-UNI-001",
     description: "An iconic luxurious fragrance with a luminous woody amber tone.",
     notes: ["Saffron", "Amberwood", "Fir Resin"],
-    imageUrl: "/images/baracatrougen.jpg",
+    imageUrl: `${CLOUDINARY_BASE}/baracatrougen.jpg`,
     isFeatured: true
   },
   {
@@ -121,7 +125,7 @@ const perfumes = [
     sku: "CS-UNI-002",
     description: "A clean, refreshing fragrance designed for everyone.",
     notes: ["Green Tea", "Papaya", "Musk"],
-    imageUrl: "/images/ckone.jpg",
+    imageUrl: `${CLOUDINARY_BASE}/ckone.jpg`,
     isFeatured: false
   },
   {
@@ -134,7 +138,7 @@ const perfumes = [
     sku: "CS-UNI-003",
     description: "A rich and exotic fragrance featuring rare oud wood.",
     notes: ["Oud", "Sandalwood", "Vanilla"],
-    imageUrl: "images/tomfordoudwood2.webp",
+    imageUrl: `${CLOUDINARY_BASE}/tomfordoudwood2.webp`,
     isFeatured: true
   },
   {
@@ -147,7 +151,7 @@ const perfumes = [
     sku: "CS-MEN-004",
     description: "A powerful and sophisticated fragrance inspired by strength.",
     notes: ["Pineapple", "Birch", "Musk"],
-    imageUrl: "/images/creedaventus.jpg",
+    imageUrl: `${CLOUDINARY_BASE}/creedaventus.jpg`,
     isFeatured: true
   },
   {
@@ -160,7 +164,7 @@ const perfumes = [
     sku: "CS-WOM-005",
     description: "A playful and sweet fragrance with a youthful charm.",
     notes: ["Kiwi", "White Chocolate", "Musk"],
-    imageUrl: "/images/Fantasy-by-Britney-spears.jpg",
+    imageUrl: `${CLOUDINARY_BASE}/Fantasy-by-Britney-spears.jpg`,
     isFeatured: false
   },
   {
@@ -173,7 +177,7 @@ const perfumes = [
     sku: "CS-KID-001",
     description: "A soft and gentle fragrance specially designed for children.",
     notes: ["Citrus", "Mint", "Vanilla"],
-    imageUrl: "/images/burberrybaby.jpg",
+    imageUrl: `${CLOUDINARY_BASE}/burberrybaby.jpg`,
     isFeatured: false
   },
   {
@@ -186,7 +190,7 @@ const perfumes = [
     sku: "CS-KID-002",
     description: "A fresh and comforting scent suitable for babies and kids.",
     notes: ["Lemon", "Honeysuckle", "Musk"],
-    imageUrl: "/images/tartineetchocolat.avif",
+    imageUrl: `${CLOUDINARY_BASE}/tartineetchocolat.avif`,
     isFeatured: false
   },
   {
@@ -199,7 +203,7 @@ const perfumes = [
     sku: "CS-KID-003",
     description: "A light, fresh fragrance perfect for everyday use by children.",
     notes: ["Orange Blossom", "White Musk", "Citrus"],
-    imageUrl: "/images/petitbateau.jpg",
+    imageUrl: `${CLOUDINARY_BASE}/petitbateau.jpg`,
     isFeatured: false
   }
 ];
@@ -208,10 +212,11 @@ const importData = async () => {
   try {
     await Product.deleteMany();
     await Product.insertMany(perfumes);
-    console.log('Data Imported!');
+    console.log('✅ Data Imported Successfully!');
+    console.log(`📦 Added ${perfumes.length} products`);
     process.exit();
   } catch (error) {
-    console.error(`${error}`);
+    console.error('❌ Error importing data:', error);
     process.exit(1);
   }
 };
@@ -219,10 +224,10 @@ const importData = async () => {
 const destroyData = async () => {
   try {
     await Product.deleteMany();
-    console.log('Data Destroyed!');
+    console.log('✅ Data Destroyed Successfully!');
     process.exit();
   } catch (error) {
-    console.error(`${error}`);
+    console.error('❌ Error destroying data:', error);
     process.exit(1);
   }
 };

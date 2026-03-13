@@ -68,7 +68,7 @@ const Checkout = () => {
                       required
                       value={formData.firstName}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:border-chers-pink"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:border-chers-pink transition"
                     />
                   </div>
                   <div>
@@ -81,7 +81,7 @@ const Checkout = () => {
                       required
                       value={formData.lastName}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:border-chers-pink"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:border-chers-pink transition"
                     />
                   </div>
                 </div>
@@ -95,7 +95,7 @@ const Checkout = () => {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:border-chers-pink"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:border-chers-pink transition"
                   />
                 </div>
               </div>
@@ -114,7 +114,7 @@ const Checkout = () => {
                       required
                       value={formData.address}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:border-chers-pink"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:border-chers-pink transition"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -128,7 +128,7 @@ const Checkout = () => {
                         required
                         value={formData.city}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:border-chers-pink"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:border-chers-pink transition"
                       />
                     </div>
                     <div>
@@ -141,7 +141,7 @@ const Checkout = () => {
                         required
                         value={formData.zipCode}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:border-chers-pink"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:border-chers-pink transition"
                       />
                     </div>
                   </div>
@@ -163,7 +163,7 @@ const Checkout = () => {
                       value={formData.cardNumber}
                       onChange={handleChange}
                       placeholder="**** **** **** ****"
-                      className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:border-chers-pink"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:border-chers-pink transition"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
@@ -178,7 +178,7 @@ const Checkout = () => {
                         value={formData.expiryDate}
                         onChange={handleChange}
                         placeholder="MM/YY"
-                        className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:border-chers-pink"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:border-chers-pink transition"
                       />
                     </div>
                     <div>
@@ -192,7 +192,7 @@ const Checkout = () => {
                         value={formData.cvv}
                         onChange={handleChange}
                         placeholder="***"
-                        className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:border-chers-pink"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-md focus:outline-none focus:border-chers-pink transition"
                       />
                     </div>
                   </div>
@@ -201,7 +201,7 @@ const Checkout = () => {
 
               <button
                 type="submit"
-                className="w-full bg-chers-pink text-white py-3 rounded-md hover:bg-opacity-90 transition"
+                className="w-full bg-chers-pink text-white py-3 rounded-md hover:bg-opacity-90 transition shadow-md hover:shadow-lg"
               >
                 Place Order
               </button>
@@ -215,17 +215,17 @@ const Checkout = () => {
               
               <div className="space-y-3 mb-4 max-h-96 overflow-y-auto">
                 {cartItems.map(item => (
-                  <div key={item._id} className="flex justify-between text-sm">
+                  <div key={item._id} className="flex justify-between text-sm py-2 border-b border-gray-100 last:border-0">
                     <span className="text-gray-600">
-                      {item.name} x {item.quantity}
+                      {item.name} <span className="text-chers-pink font-medium">x{item.quantity}</span>
                     </span>
-                    <span>${(item.price * item.quantity).toFixed(2)}</span>
+                    <span className="font-medium">${(item.price * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}
               </div>
 
               <div className="border-t pt-3">
-                <div className="flex justify-between font-semibold">
+                <div className="flex justify-between font-semibold text-lg">
                   <span>Total</span>
                   <span className="text-chers-pink">${getCartTotal().toFixed(2)}</span>
                 </div>

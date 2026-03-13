@@ -46,6 +46,13 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  imagePublicId: {  // Store Cloudinary public ID for deletion
+    type: String
+  },
+  additionalImages: [{  // For multiple images
+    url: String,
+    publicId: String
+  }],
   isFeatured: {
     type: Boolean,
     default: false

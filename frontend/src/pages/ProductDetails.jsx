@@ -6,6 +6,10 @@ import { useCart } from '../contexts/CartContext';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 
+// Get API URL from environment
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+
 const ProductDetails = () => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
@@ -18,11 +22,11 @@ const ProductDetails = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const { data } = await axios.get(`http://localhost:5000/api/products/${id}`);
+        const { data } = await axios.get(`${API_URL}/products/${id}`);
         setProduct(data);
         
         // Fetch related products (same category)
-        const relatedRes = await axios.get(`http://localhost:5000/api/products/category/${data.category}`);
+        const relatedRes = await axios.get(`${API_URL}/products/category/${data.category}`);
         setRelatedProducts(relatedRes.data.filter(p => p._id !== data._id).slice(0, 4));
       } catch (error) {
         console.error('Error fetching product:', error);
@@ -36,6 +40,7 @@ const ProductDetails = () => {
 
   const handleAddToCart = () => {
     addToCart(product, quantity);
+    toast.success(`${product.name} added to cart!`);
   };
 
   const incrementQuantity = () => {
@@ -48,6 +53,37 @@ const ProductDetails = () => {
     if (quantity > 1) {
       setQuantity(prev => prev - 1);
     }
+  };
+
+  // Generate optimized Cloudinary URL
+  const getOptimizedImageUrl = (url, width = 600, height = 600) => {
+    if (!url) return '';
+    
+    if (url.includes('cloudinary')) {
+      // Split the URL to insert transformations
+      const parts = url.split('/upload/');
+      if (parts.length === 2) {
+        return `${parts[0]}/upload/w_${width},h_${height},c_fill,q_auto,f_auto/${parts[1]}`;
+      }
+    }
+    return url;
+  };
+
+  // Generate fallback image based on category
+  const getFallbackImage = (category) => {
+    const colors = {
+      men: '3b82f6',
+      women: 'ec4899',
+      unisex: '8b5cf6',
+      kids: 'f59e0b'
+    };
+    const color = colors[category] || 'e37380';
+    
+    return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_600,h_600,c_fill,b_rgb:${color}/v1/perfume-store/placeholder`;
+  };
+
+  const handleImageError = (e, category) => {
+    e.target.src = getFallbackImage(category);
   };
 
   if (loading) {
@@ -74,10 +110,6 @@ const ProductDetails = () => {
     );
   }
 
-  const imageUrl = imageError 
-    ? 'https://via.placeholder.com/600x600?text=Perfume' 
-    : `http://localhost:5000${product.imageUrl}`;
-
   return (
     <div className="bg-chers-soft min-h-screen py-8">
       <div className="max-w-7xl mx-auto px-4">
@@ -94,21 +126,22 @@ const ProductDetails = () => {
             <div className="relative">
               <div className="aspect-square rounded-lg overflow-hidden bg-chers-pale">
                 <img 
-                  src={imageUrl}
+                  src={getOptimizedImageUrl(product.imageUrl, 600, 600)}
                   alt={product.name}
-                  onError={() => setImageError(true)}
+                  onError={(e) => handleImageError(e, product.category)}
                   className="w-full h-full object-cover"
+                  loading="lazy"
                 />
               </div>
               
               {/* Stock Badge */}
               {product.stock < 5 && product.stock > 0 && (
-                <span className="absolute top-4 right-4 bg-chers-pink text-white px-4 py-2 rounded-full text-sm">
+                <span className="absolute top-4 right-4 bg-chers-pink text-white px-4 py-2 rounded-full text-sm font-medium">
                   Only {product.stock} left in stock
                 </span>
               )}
               {product.stock === 0 && (
-                <span className="absolute top-4 right-4 bg-gray-500 text-white px-4 py-2 rounded-full text-sm">
+                <span className="absolute top-4 right-4 bg-gray-500 text-white px-4 py-2 rounded-full text-sm font-medium">
                   Out of Stock
                 </span>
               )}
@@ -155,15 +188,19 @@ const ProductDetails = () => {
                   <button 
                     onClick={decrementQuantity}
                     disabled={quantity <= 1}
-                    className="px-4 py-2 text-gray-600 hover:bg-chers-pale disabled:opacity-50"
+                    className="px-4 py-2 text-gray-600 hover:bg-chers-pale disabled:opacity-50 transition"
+                    aria-label="Decrease quantity"
                   >
                     -
                   </button>
-                  <span className="px-4 py-2 border-x border-gray-200">{quantity}</span>
+                  <span className="px-4 py-2 border-x border-gray-200 min-w-[40px] text-center">
+                    {quantity}
+                  </span>
                   <button 
                     onClick={incrementQuantity}
                     disabled={quantity >= product.stock}
-                    className="px-4 py-2 text-gray-600 hover:bg-chers-pale disabled:opacity-50"
+                    className="px-4 py-2 text-gray-600 hover:bg-chers-pale disabled:opacity-50 transition"
+                    aria-label="Increase quantity"
                   >
                     +
                   </button>
@@ -172,17 +209,20 @@ const ProductDetails = () => {
                 <button 
                   onClick={handleAddToCart}
                   disabled={product.stock === 0}
-                  className={`flex-1 py-3 rounded-md flex items-center justify-center space-x-2 ${
+                  className={`flex-1 py-3 rounded-md flex items-center justify-center space-x-2 transition ${
                     product.stock === 0 
                       ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
-                      : 'bg-chers-pink text-white hover:bg-opacity-90'
+                      : 'bg-chers-pink text-white hover:bg-opacity-90 hover:shadow-lg'
                   }`}
                 >
                   <FiShoppingBag />
                   <span>{product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}</span>
                 </button>
 
-                <button className="p-3 border border-gray-200 rounded-md hover:bg-chers-pale transition">
+                <button 
+                  className="p-3 border border-gray-200 rounded-md hover:bg-chers-pale transition"
+                  aria-label="Add to wishlist"
+                >
                   <FiHeart className="text-xl" />
                 </button>
               </div>
@@ -200,17 +240,20 @@ const ProductDetails = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {relatedProducts.map(related => (
                 <Link key={related._id} to={`/product/${related._id}`}>
-                  <div className="bg-chers-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition">
-                    <div className="aspect-square bg-chers-pale">
+                  <div className="bg-chers-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition group">
+                    <div className="aspect-square bg-chers-pale overflow-hidden">
                       <img 
-                        src={`http://localhost:5000${related.imageUrl}`}
+                        src={getOptimizedImageUrl(related.imageUrl, 300, 300)}
                         alt={related.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => e.target.src = 'https://via.placeholder.com/300x300?text=Perfume'}
+                        className="w-full h-full object-cover group-hover:scale-110 transition duration-500"
+                        onError={(e) => handleImageError(e, related.category)}
+                        loading="lazy"
                       />
                     </div>
                     <div className="p-4">
-                      <h3 className="font-serif text-lg mb-1">{related.name}</h3>
+                      <h3 className="font-serif text-lg mb-1 group-hover:text-chers-pink transition">
+                        {related.name}
+                      </h3>
                       <p className="text-chers-pink font-semibold">${related.price}</p>
                     </div>
                   </div>

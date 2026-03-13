@@ -4,6 +4,9 @@ import { FiShoppingBag, FiMenu, FiX, FiUser, FiSearch } from 'react-icons/fi';
 import { useCart } from '../contexts/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// Get Cloudinary cloud name from environment
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -40,22 +43,22 @@ const Navbar = () => {
   return (
     <>
       <nav 
-        className={`fixed  bg-chers-light/95 w-full z-50 transition-all duration-500 backdrop-blur-md   ${
+        className={`fixed w-full z-50 transition-all duration-500 backdrop-blur-md ${
           scrolled 
-            ? 'bg-chers-white backdrop-blur-lg shadow-lg py-3' 
+            ? 'bg-chers-white/95 shadow-lg py-3' 
             : 'bg-transparent py-6'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
             
-            {/* Logo  */}
+            {/* Logo - Now using Cloudinary for logo */}
             <Link to="/" className="relative z-10">
               <img 
-                src="/images/logonew.png" 
+                src={`https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_150,h_50,c_fill,q_auto,f_auto/v1/perfume-store/logonew`}
                 alt="Chers" 
-                className={`h-15 md:h-22 w-auto transition-all duration-300 ${
-                  scrolled ? 'opacity-100 scale-100' : 'opacity-95 scale-105'
+                className={`h-12 md:h-16 w-auto transition-all duration-300 ${
+                  scrolled ? 'opacity-100' : 'opacity-95'
                 }`}
               />
             </Link>
@@ -74,7 +77,7 @@ const Navbar = () => {
               ))}
             </div>
 
-            {/* Right Icons  */}
+            {/* Right Icons */}
             <div className="flex items-center space-x-4 sm:space-x-6">
               {/* Search - Hidden on mobile */}
               <button className="hidden sm:block text-chers-navy hover:text-chers-pink transition-colors">
@@ -189,7 +192,7 @@ const Navbar = () => {
         </AnimatePresence>
       </nav>
 
-      {/* Spacer for fixed navbar -  */}
+      {/* Spacer for fixed navbar */}
       <div className="h-24 md:h-28"></div>
     </>
   );
