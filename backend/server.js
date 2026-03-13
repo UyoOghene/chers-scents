@@ -19,6 +19,19 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+// Add this right after your middleware
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Chers Scents API',
+    endpoints: {
+      health: '/api/health',
+      products: '/api/products',
+      featured: '/api/products/featured'
+    }
+  });
+});
+
+// Keep your existing routes...
 
 // For Vercel, you CANNOT serve static files directly
 // Instead, use a cloud storage solution (recommended)

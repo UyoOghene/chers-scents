@@ -4,6 +4,7 @@ import axios from 'axios';
 import ProductCard from '../components/ProductCard';
 import { FiFilter, FiX } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';  
 
 // Get API URL from environment
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
