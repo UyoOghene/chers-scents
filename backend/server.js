@@ -31,30 +31,7 @@ app.get('/', (req, res) => {
   });
 });
 
-// Keep your existing routes...
 
-// For Vercel, you CANNOT serve static files directly
-// Instead, use a cloud storage solution (recommended)
-
-// Option 1: Use a cloud storage URL (RECOMMENDED)
-// Store full URLs in your database instead of relative paths
-// Example: "https://res.cloudinary.com/your-cloud/image/upload/v123/dior-sauvage.jpg"
-
-// Option 2: If you MUST serve local images for development only
-if (process.env.NODE_ENV !== 'production') {
-  app.use('/images', express.static(path.join(__dirname, 'public/images')));
-  
-  // Image fallback for development
-  app.get('/images/:filename', (req, res, next) => {
-    const imagePath = path.join(__dirname, 'public/images', req.params.filename);
-    res.sendFile(imagePath, err => {
-      if (err) {
-        // Serve placeholder if image not found
-        res.sendFile(path.join(__dirname, 'public/images/placeholder.jpg'));
-      }
-    });
-  });
-}
 
 // Routes
 app.use('/api/products', productRoutes);
@@ -80,9 +57,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ❌ REMOVE this for Vercel:
-// const PORT = process.env.PORT || 5000;
-// app.listen(PORT, () => {...})
 
 // ✅ EXPORT for Vercel:
 module.exports = app;
