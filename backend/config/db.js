@@ -2,22 +2,24 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    // Don't connect if already connected
-    if (mongoose.connections[0].readyState) {
-      console.log('Already connected to MongoDB');
-      return;
-    }
+    // No need for deprecated options - they're now defaults
+    const conn = await mongoose.connect(process.env.MONGODB_URI);
     
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+    console.log(`📊 Database: ${conn.connection.name}`);
+    
+    // Handle connection events
+    mongoose.connection.on('error', (err) => {
+      console.error('❌ MongoDB connection error:', err);
     });
-    
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
+
+    mongoose.connection.on('disconnected', () => {
+      console.log('⚠️ MongoDB disconnected');
+    });
+
   } catch (error) {
-    console.error(`Error: ${error.message}`);
-    // Don't exit process in serverless environment
-    throw error;
+    console.error('❌ MongoDB Connection Error:', error.message);
+    process.exit(1);
   }
 };
 
