@@ -11,6 +11,7 @@ const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [imageError, setImageError] = useState({});
 
   useEffect(() => {
     const fetchFeatured = async () => {
@@ -26,17 +27,41 @@ const Home = () => {
     fetchFeatured();
   }, []);
 
-  // Category images from Cloudinary
-  const categoryImages = {
-    women: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_800,h_600,c_fill,q_auto,f_auto/v1/perfume-store/categories/women-collection`,
-    men: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_800,h_600,c_fill,q_auto,f_auto/v1/perfume-store/categories/men-collection`,
-    unisex: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_800,h_600,c_fill,q_auto,f_auto/v1/perfume-store/categories/unisex-collection`
+  // Category images - with fallback if cloud name is missing
+  const getCategoryImage = (category) => {
+    if (!CLOUD_NAME) {
+      // Return local fallback images if cloud name is missing
+      return {
+        women: '/images/category-women.jpg',
+        men: '/images/category-men.jpg',
+        unisex: '/images/category-unisex.jpg'
+      }[category] || '';
+    }
+    
+    return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_800,h_600,c_fill,q_auto,f_auto/v1/perfume-store/categories/${category}-collection`;
+  };
+
+  const handleImageError = (category) => {
+    setImageError(prev => ({
+      ...prev,
+      [category]: true
+    }));
+  };
+
+  // Fallback images if Cloudinary fails
+  const fallbackImages = {
+    women: 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=800',
+    men: 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=800',
+    unisex: 'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=800'
   };
 
   // Handle video error
   const handleVideoError = (e) => {
     console.error('Video failed to load');
-    // You could set a fallback image here
+    // Hide video container or show fallback image
+    e.target.style.display = 'none';
+    const fallbackImg = e.target.nextElementSibling;
+    if (fallbackImg) fallbackImg.style.display = 'block';
   };
 
   return (
@@ -54,13 +79,17 @@ const Home = () => {
             onError={handleVideoError}
           >
             <source src="/images/heroperfvid.mp4" type="video/mp4" />
-            {/* Fallback for browsers that don't support video */}
-            <img 
-              src={`https://res.cloudinary.com/${CLOUD_NAME}/image/upload/w_1920,h_1080,c_fill,q_auto,f_auto/v1/perfume-store/hero-fallback`}
-              alt="Luxury perfume collection"
-              className="w-full h-full object-cover"
-            />
           </video>
+          
+          {/* Fallback image for video */}
+          <img 
+            src="https://images.unsplash.com/photo-1594035910387-fea47794261f?w=1920"
+            alt="Luxury perfume collection"
+            className="w-full h-full object-cover hidden"
+            onError={(e) => {
+              e.target.src = 'https://via.placeholder.com/1920x1080/f5f0e9/3b3b3b?text=Luxury+Fragrances';
+            }}
+          />
           
           {/* Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-r from-chers-soft/90 to-transparent"></div>
@@ -153,32 +182,37 @@ const Home = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { name: 'women', title: "Women's", image: categoryImages.women },
-              { name: 'men', title: "Men's", image: categoryImages.men },
-              { name: 'unisex', title: 'Unisex', image: categoryImages.unisex }
-            ].map((category, index) => (
-              <Link 
-                key={category.name}
-                to={`/products?category=${category.name}`}
-                className="group relative h-96 overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-shadow"
-              >
-                <img 
-                  src={category.image}
-                  alt={category.title}
-                  className="w-full h-full object-cover group-hover:scale-110 transition duration-700"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-                <div className="absolute bottom-0 left-0 right-0 p-8 text-white transform group-hover:translate-y-[-10px] transition-transform">
-                  <h3 className="text-3xl font-serif mb-2">{category.title}'s Collection</h3>
-                  <p className="opacity-90 group-hover:opacity-100 transition flex items-center">
-                    Shop Now 
-                    <span className="ml-2 group-hover:ml-4 transition-all">→</span>
-                  </p>
-                </div>
-              </Link>
-            ))}
+            {['women', 'men', 'unisex'].map((category, index) => {
+              const title = category === 'women' ? "Women's" : 
+                           category === 'men' ? "Men's" : 'Unisex';
+              const imageUrl = imageError[category] ? 
+                fallbackImages[category] : 
+                getCategoryImage(category);
+              
+              return (
+                <Link 
+                  key={category}
+                  to={`/products?category=${category}`}
+                  className="group relative h-96 overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-shadow"
+                >
+                  <img 
+                    src={imageUrl}
+                    alt={title}
+                    className="w-full h-full object-cover group-hover:scale-110 transition duration-700"
+                    onError={() => handleImageError(category)}
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                  <div className="absolute bottom-0 left-0 right-0 p-8 text-white transform group-hover:translate-y-[-10px] transition-transform">
+                    <h3 className="text-3xl font-serif mb-2">{title} Collection</h3>
+                    <p className="opacity-90 group-hover:opacity-100 transition flex items-center">
+                      Shop Now 
+                      <span className="ml-2 group-hover:ml-4 transition-all">→</span>
+                    </p>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -199,9 +233,15 @@ const Home = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {featuredProducts.map(product => (
-                <ProductCard key={product._id} product={product} />
-              ))}
+              {featuredProducts.length > 0 ? (
+                featuredProducts.map(product => (
+                  <ProductCard key={product._id} product={product} />
+                ))
+              ) : (
+                <p className="text-center col-span-4 text-gray-500">
+                  No featured products available
+                </p>
+              )}
             </div>
           )}
         </div>

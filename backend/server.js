@@ -12,23 +12,26 @@ connectDB();
 
 const app = express();
 
-// Middleware
-
-// Update your CORS middleware to this:
+// More permissive CORS for development
 app.use(cors({
   origin: [
     'http://localhost:5173',
+    'http://localhost:5174',
     'https://chersscents.vercel.app',
-    'https://chersscents-lkenzcish-uyos-projects.vercel.app',
+    'https://chers-scents.vercel.app',
     process.env.CLIENT_URL
   ].filter(Boolean),
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-// Add this before your routes to handle preflight requests
+// Handle preflight requests
 app.options('*', cors());
+
+// Body parser middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.get('/', (req, res) => {

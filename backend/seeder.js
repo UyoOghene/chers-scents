@@ -7,7 +7,7 @@ dotenv.config();
 connectDB();
 
 // Cloudinary base URL - replace with your actual cloud name
-const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || 'dk0e6pgpj';
+const CLOUD_NAME = process.env.VITE_CLOUDINARY_CLOUD_NAME || 'dk0e6pgpj';
 const CLOUDINARY_BASE = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/v1/perfume-store`;
 
 const perfumes = [
