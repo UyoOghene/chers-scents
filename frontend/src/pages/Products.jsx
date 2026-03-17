@@ -13,6 +13,7 @@ const Products = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filters, setFilters] = useState({ 
     category: '', 
     brand: '',
@@ -43,8 +44,11 @@ const Products = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
+      setError(null);
       try {
+        console.log('Fetching products from:', API_URL);
         const { data } = await axios.get(`${API_URL}/products`);
+        console.log('Products fetched:', data);
         setProducts(data);
         
         // Extract unique brands
@@ -52,6 +56,7 @@ const Products = () => {
         setBrands(uniqueBrands);
       } catch (error) {
         console.error('Error fetching products:', error);
+        setError(error.message);
         toast.error('Failed to load products');
       } finally {
         setLoading(false);
@@ -139,6 +144,23 @@ const Products = () => {
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-chers-pink border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading our fragrance collection...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-serif text-chers-pink mb-4">Oops! Something went wrong</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="bg-chers-pink text-white px-6 py-2 rounded-md hover:bg-opacity-90"
+          >
+            Try Again
+          </button>
         </div>
       </div>
     );
@@ -303,130 +325,6 @@ const Products = () => {
               )}
             </div>
           </div>
-
-          {/* Mobile Filter Sidebar */}
-          <AnimatePresence>
-            {mobileFilterOpen && (
-              <>
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  onClick={() => setMobileFilterOpen(false)}
-                  className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-                />
-                <motion.div
-                  initial={{ x: '100%' }}
-                  animate={{ x: 0 }}
-                  exit={{ x: '100%' }}
-                  transition={{ type: 'tween' }}
-                  className="fixed right-0 top-0 bottom-0 w-80 bg-chers-white z-50 lg:hidden overflow-y-auto"
-                >
-                  <div className="p-6">
-                    <div className="flex items-center justify-between mb-6">
-                      <h2 className="font-serif text-xl">Filters</h2>
-                      <button
-                        onClick={() => setMobileFilterOpen(false)}
-                        className="p-2 hover:bg-chers-pale rounded-full"
-                      >
-                        <FiX size={20} />
-                      </button>
-                    </div>
-
-                    {/* Mobile filter content */}
-                    <div className="mb-6">
-                      <h3 className="font-medium mb-3">Category</h3>
-                      <div className="space-y-2">
-                        {['all', 'men', 'women', 'unisex', 'kids'].map(cat => (
-                          <label key={cat} className="flex items-center space-x-2 cursor-pointer">
-                            <input
-                              type="radio"
-                              name="mobile-category"
-                              value={cat}
-                              checked={filters.category === (cat === 'all' ? '' : cat)}
-                              onChange={(e) => {
-                                setFilters({ 
-                                  ...filters, 
-                                  category: e.target.value === 'all' ? '' : e.target.value 
-                                });
-                                setMobileFilterOpen(false);
-                              }}
-                              className="text-chers-pink focus:ring-chers-pink"
-                            />
-                            <span className="text-gray-700 capitalize">
-                              {cat === 'all' ? 'All Categories' : cat}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-
-                    {brands.length > 0 && (
-                      <div className="mb-6">
-                        <h3 className="font-medium mb-3">Brand</h3>
-                        <select
-                          value={filters.brand}
-                          onChange={(e) => {
-                            setFilters({ ...filters, brand: e.target.value });
-                            setMobileFilterOpen(false);
-                          }}
-                          className="w-full px-3 py-2 border border-gray-200 rounded-md"
-                        >
-                          <option value="">All Brands</option>
-                          {brands.map(brand => (
-                            <option key={brand} value={brand}>{brand}</option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
-
-                    <div className="mb-6">
-                      <h3 className="font-medium mb-3">Price Range</h3>
-                      <div className="space-y-2">
-                        <label className="flex items-center space-x-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="mobile-price"
-                            value=""
-                            checked={!filters.priceRange}
-                            onChange={() => {
-                              setFilters({ ...filters, priceRange: '' });
-                              setMobileFilterOpen(false);
-                            }}
-                            className="text-chers-pink"
-                          />
-                          <span>All Prices</span>
-                        </label>
-                        {priceRanges.map(range => (
-                          <label key={range.label} className="flex items-center space-x-2 cursor-pointer">
-                            <input
-                              type="radio"
-                              name="mobile-price"
-                              value={`${range.min}-${range.max}`}
-                              checked={filters.priceRange === `${range.min}-${range.max}`}
-                              onChange={(e) => {
-                                setFilters({ ...filters, priceRange: e.target.value });
-                                setMobileFilterOpen(false);
-                              }}
-                              className="text-chers-pink"
-                            />
-                            <span>{range.label}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={clearFilters}
-                      className="w-full bg-chers-pink text-white py-2 rounded-md hover:bg-opacity-90 transition"
-                    >
-                      Clear All Filters
-                    </button>
-                  </div>
-                </motion.div>
-              </>
-            )}
-          </AnimatePresence>
 
           {/* Products Grid */}
           <div className="flex-1">

@@ -22,11 +22,11 @@ const ProductCard = ({ product }) => {
     toast.success(isWishlisted ? 'Removed from wishlist' : 'Added to wishlist');
   };
 
-  // Generate Cloudinary URL with optimizations
+  // Generate optimized Cloudinary URL
   const getOptimizedImageUrl = () => {
     if (!product.imageUrl) return '';
     
-    // If it's already a Cloudinary URL, add transformations
+    // If it's a Cloudinary URL, add transformations for optimization
     if (product.imageUrl.includes('cloudinary')) {
       // Split the URL to insert transformations
       const parts = product.imageUrl.split('/upload/');
@@ -48,11 +48,12 @@ const ProductCard = ({ product }) => {
     };
     const color = colors[product.category] || 'e37380';
     
-    // Use Cloudinary to generate a colored placeholder
-    return `https://res.cloudinary.com/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload/w_400,h_400,c_fill,b_rgb:${color}/v1/perfume-store/placeholder`;
+    // Use placeholder image service
+    return `https://placehold.co/400x400/${color}/ffffff?text=${encodeURIComponent(product.name)}`;
   };
 
   const handleImageError = () => {
+    console.log('Image failed to load:', product.imageUrl);
     setImageError(true);
   };
 
